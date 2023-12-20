@@ -157,26 +157,26 @@ macro_rules! err {
 //     |----------------------------|------------------------
 //              special                   non-special*
 #[derive(Clone, Copy, Debug)]
-pub(crate) struct Special {
+pub struct Special {
     /// The identifier of the last special state in a DFA. A state is special
     /// if and only if its identifier is less than or equal to `max`.
-    pub(crate) max: StateID,
+    pub max: StateID,
     /// The identifier of the quit state in a DFA. (There is no analogous field
     /// for the dead state since the dead state's ID is always zero, regardless
     /// of state ID size.)
-    pub(crate) quit_id: StateID,
+    pub quit_id: StateID,
     /// The identifier of the first match state.
-    pub(crate) min_match: StateID,
+    pub min_match: StateID,
     /// The identifier of the last match state.
-    pub(crate) max_match: StateID,
+    pub max_match: StateID,
     /// The identifier of the first accelerated state.
-    pub(crate) min_accel: StateID,
+    pub min_accel: StateID,
     /// The identifier of the last accelerated state.
-    pub(crate) max_accel: StateID,
+    pub max_accel: StateID,
     /// The identifier of the first start state.
-    pub(crate) min_start: StateID,
+    pub min_start: StateID,
     /// The identifier of the last start state.
-    pub(crate) max_start: StateID,
+    pub max_start: StateID,
 }
 
 impl Special {

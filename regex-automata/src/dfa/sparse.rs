@@ -438,6 +438,33 @@ impl<T: AsRef<[u8]>> DFA<T> {
         }
     }
 
+    /// Return the transitions of this sparse DFA.
+    pub fn states(&self) -> StateIter<'_, T> {
+        self.tt.states()
+    }
+
+    /// Return the classes id of a character
+    pub fn class(&self, input: u8) -> u8 {
+        self.tt.classes.get(input)
+    }
+
+    /// Return the map of classes
+    pub fn classes_map(&self) -> Vec<Vec<u16>> {
+        let mut classes_map = vec![];
+        for class in self.tt.classes.iter() {
+            let res = self.tt.classes.elements(class).map(
+                |u| u.as_usize() as u16
+            ).collect();
+            classes_map.push(res)
+        } 
+        classes_map
+    }
+
+    /// Return the special state.
+    pub fn special(&self) -> Special {
+        self.special
+    }
+
     /// Returns the starting state configuration for this DFA.
     ///
     /// The default is [`StartKind::Both`], which means the DFA supports both
@@ -2215,7 +2242,7 @@ impl<'a, T> fmt::Debug for StartStateIter<'a, T> {
 ///
 /// This iterator yields tuples, where the first element is the state ID and
 /// the second element is the state itself.
-struct StateIter<'a, T> {
+pub struct StateIter<'a, T> {
     trans: &'a Transitions<T>,
     id: usize,
 }
@@ -2242,7 +2269,7 @@ impl<'a, T> fmt::Debug for StateIter<'a, T> {
 /// A representation of a sparse DFA state that can be cheaply materialized
 /// from a state identifier.
 #[derive(Clone)]
-struct State<'a> {
+pub struct State<'a> {
     /// The identifier of this state.
     id: StateID,
     /// Whether this is a match state or not.
@@ -2276,7 +2303,7 @@ impl<'a> State<'a> {
     /// This is marked as inline to help dramatically boost sparse searching,
     /// which decodes each state it enters to follow the next transition.
     #[cfg_attr(feature = "perf-inline", inline(always))]
-    fn next(&self, input: u8) -> StateID {
+    pub fn next(&self, input: u8) -> StateID {
         // This straight linear search was observed to be much better than
         // binary search on ASCII haystacks, likely because a binary search
         // visits the ASCII case last but a linear search sees it first. A
@@ -2302,18 +2329,23 @@ impl<'a> State<'a> {
     }
 
     /// Returns the identifier for this state.
-    fn id(&self) -> StateID {
+    pub fn id(&self) -> StateID {
         self.id
     }
 
     /// Returns the inclusive input byte range for the ith transition in this
     /// state.
-    fn range(&self, i: usize) -> (u8, u8) {
+    pub fn range(&self, i: usize) -> (u8, u8) {
         (self.input_ranges[i * 2], self.input_ranges[i * 2 + 1])
     }
 
+    /// Return all available ranges.
+    pub fn ranges(&self) -> Vec<(u8, u8)> {
+        (0..(self.ntrans - 1)).map(|i| self.range(i)).collect()
+    }
+
     /// Returns the next state for the ith transition in this state.
-    fn next_at(&self, i: usize) -> StateID {
+    pub fn next_at(&self, i: usize) -> StateID {
         let start = i * StateID::SIZE;
         let end = start + StateID::SIZE;
         let bytes = self.next[start..end].try_into().unwrap();
